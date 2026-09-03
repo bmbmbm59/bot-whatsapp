@@ -23,8 +23,7 @@ const client = new Client({
         ]
     }
 });
-const qrcode = require('qrcode-terminal');
-const express = require('express');
+
 
 // Serveur pour garder le bot en ligne
 const app = express();
