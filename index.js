@@ -1,19 +1,25 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
-const puppeteer = require('puppeteer');
 const qrcode = require('qrcode-terminal');
 const express = require('express');
+const path = require('path');
 
-// 1. Serveur HTTP pour Render & UptimeRobot
+// Serveur HTTP pour Render
 const app = express();
 const PORT = process.env.PORT || 3000;
 app.get('/', (req, res) => res.send('Bot WhatsApp actif !'));
 app.listen(PORT, () => console.log(`Serveur Web prêt sur le port ${PORT}`));
 
-// 2. Configuration WhatsApp & Puppeteer pour Linux/Render
+// Chemin explicite vers le binaire Chrome 146 téléchargé
+const chromePath = path.join(
+    '/opt/render/.cache/puppeteer/chrome/linux-146.0.7680.31/chrome-linux64/chrome'
+);
+
+// Configuration WhatsApp
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
         headless: true,
+        executablePath: chromePath,
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
