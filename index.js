@@ -1,4 +1,28 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
+const puppeteer = require('puppeteer');
+const qrcode = require('qrcode-terminal');
+const express = require('express');
+
+// Serveur HTTP pour Render
+const app = express();
+const PORT = process.env.PORT || 3000;
+app.get('/', (req, res) => res.send('Bot WhatsApp actif !'));
+app.listen(PORT, () => console.log(`Serveur Web prêt sur le port ${PORT}`));
+
+// Configuration universelle (Windows & Linux Render)
+const client = new Client({
+    authStrategy: new LocalAuth(),
+    puppeteer: {
+        headless: true,
+        executablePath: puppeteer.executablePath(),
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-gpu'
+        ]
+    }
+});
 const qrcode = require('qrcode-terminal');
 const express = require('express');
 
