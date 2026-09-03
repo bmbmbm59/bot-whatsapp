@@ -13,7 +13,7 @@ let currentQrCodeImage = '';
 // Page d'accueil
 app.get('/', (req, res) => res.send('Bot WhatsApp actif ! Allez sur /qr pour voir le QR Code.'));
 
-// Page Web avec image QR Code très facile à scanner
+// Page Web avec image QR Code
 app.get('/qr', (req, res) => {
     if (currentQrCodeImage) {
         res.send(`
@@ -152,6 +152,36 @@ client.on('message', async (msg) => {
         auction.currentBid = bidAmount;
         auction.highestBidder = msg.author || msg.from;
         chat.sendMessage(`✅ **NOUVELLE OFFRE !**\n\n` + generateProductCard(auctionId, auction), { mentions: [auction.highestBidder] });
+    }
+    else if (body === '!liste') {
+        let activeAuctions = [];
+        auctions.forEach((auction, id) => {
+            if (auction.active) {
+                const timeLeft = formatTimeLeft(auction.endTime);
+                const bidderText = auction.highestBidder 
+                    ? `@${auction.highestBidder.split('@')[0]}` 
+                    : 'Aucune offre';
+                activeAuctions.push(
+                    `🔹 **#${id} — ${auction.item}**\n` +
+                    `   • Prix actuel : *${auction.currentBid} €*\n` +
+                    `   • Enchérisseur : ${bidderText}\n` +
+                    `   • Temps restant : ⏳ *${timeLeft}*`
+                );
+            }
+        });
+
+        if (activeAuctions.length === 0) {
+            return msg.reply('📋 Aucune enchère n\'est actuellement en cours.');
+        }
+
+        const listMessage = 
+            `📋 **ENCHÈRES EN COURS (${activeAuctions.length}/${MAX_AUCTIONS})**\n` +
+            `----------------------------------------\n\n` +
+            activeAuctions.join('\n\n') +
+            `\n\n----------------------------------------\n` +
+            `👉 *Pour enchérir : !enchere [ID] [Montant]*`;
+
+        chat.sendMessage(listMessage);
     }
 });
 
