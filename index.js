@@ -9,9 +9,9 @@ const PORT = process.env.PORT || 3000;
 app.get('/', (req, res) => res.send('Bot WhatsApp actif !'));
 app.listen(PORT, () => console.log(`Serveur Web prêt sur le port ${PORT}`));
 
-// Chemin explicite vers le binaire Chrome 146 téléchargé
+// Chemin exact extrait de vos logs de déploiement
 const chromePath = path.join(
-    '/opt/render/.cache/puppeteer/chrome/linux-146.0.7680.31/chrome-linux64/chrome'
+    '/opt/render/project/src/chrome/linux-146.0.7680.31/chrome-linux64/chrome'
 );
 
 // Configuration WhatsApp
