@@ -3,13 +3,13 @@ const puppeteer = require('puppeteer');
 const qrcode = require('qrcode-terminal');
 const express = require('express');
 
-// Serveur HTTP pour Render
+// 1. Serveur HTTP pour Render & UptimeRobot
 const app = express();
 const PORT = process.env.PORT || 3000;
 app.get('/', (req, res) => res.send('Bot WhatsApp actif !'));
 app.listen(PORT, () => console.log(`Serveur Web prêt sur le port ${PORT}`));
 
-// Configuration universelle (Windows & Linux Render)
+// 2. Configuration WhatsApp & Puppeteer pour Linux/Render
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
@@ -24,21 +24,7 @@ const client = new Client({
     }
 });
 
-
-// Serveur pour garder le bot en ligne
-const app = express();
-const PORT = process.env.PORT || 3000;
-app.get('/', (req, res) => res.send('Bot WhatsApp actif !'));
-app.listen(PORT, () => console.log(`Serveur Web prêt sur le port ${PORT}`));
-
-// Connexion WhatsApp
-const client = new Client({
-    authStrategy: new LocalAuth(),
-    puppeteer: {
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-    }
-});
-
+// 3. Variables de gestion des enchères
 const MAX_AUCTIONS = 10;
 const auctions = new Map();
 
@@ -68,6 +54,7 @@ function generateProductCard(auctionId, auction) {
     );
 }
 
+// 4. Événements WhatsApp
 client.on('qr', (qr) => {
     console.log('--- SCANNEZ CE QR CODE DANS WHATSAPP ---');
     qrcode.generate(qr, { small: true });
