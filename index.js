@@ -1,20 +1,50 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
-const qrcode = require('qrcode-terminal');
+const qrcodeTerminal = require('qrcode-terminal');
+const QRCode = require('qrcode');
 const express = require('express');
 const path = require('path');
 
-// Serveur HTTP pour Render
+// 1. Serveur HTTP pour Render & UptimeRobot
 const app = express();
 const PORT = process.env.PORT || 3000;
-app.get('/', (req, res) => res.send('Bot WhatsApp actif !'));
+
+let currentQrCodeImage = '';
+
+// Page d'accueil
+app.get('/', (req, res) => res.send('Bot WhatsApp actif ! Allez sur /qr pour voir le QR Code.'));
+
+// Page Web avec image QR Code très facile à scanner
+app.get('/qr', (req, res) => {
+    if (currentQrCodeImage) {
+        res.send(`
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <title>Connexion WhatsApp</title>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                </head>
+                <body style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;font-family:sans-serif;background-color:#f0f2f5;">
+                    <div style="background:white;padding:20px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1);text-align:center;">
+                        <h2>Scannez ce QR Code dans WhatsApp</h2>
+                        <img src="${currentQrCodeImage}" style="width:280px;height:280px;" />
+                        <p style="color:#666;font-size:14px;">Appareils connectés > Connecter un appareil</p>
+                    </div>
+                </body>
+            </html>
+        `);
+    } else {
+        res.send('<h2>QR Code indisponible (Le bot est déjà connecté ou en cours de démarrage).</h2>');
+    }
+});
+
 app.listen(PORT, () => console.log(`Serveur Web prêt sur le port ${PORT}`));
 
-// Chemin exact extrait de vos logs de déploiement
+// 2. Chemin du binaire Chrome installé par le script postinstall
 const chromePath = path.join(
     '/opt/render/project/src/chrome/linux-146.0.7680.31/chrome-linux64/chrome'
 );
 
-// Configuration WhatsApp
+// 3. Initialisation du client WhatsApp
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
@@ -29,7 +59,7 @@ const client = new Client({
     }
 });
 
-// 3. Variables de gestion des enchères
+// 4. Variables de gestion des enchères
 const MAX_AUCTIONS = 10;
 const auctions = new Map();
 
@@ -59,16 +89,19 @@ function generateProductCard(auctionId, auction) {
     );
 }
 
-// 4. Événements WhatsApp
-client.on('qr', (qr) => {
-    console.log('--- SCANNEZ CE QR CODE DANS WHATSAPP ---');
-    qrcode.generate(qr, { small: true });
+// 5. Gestion de la génération du QR Code
+client.on('qr', async (qr) => {
+    console.log('--- NOUVEAU QR CODE GÉNÉRÉ ---');
+    qrcodeTerminal.generate(qr, { small: true });
+    currentQrCodeImage = await QRCode.toDataURL(qr);
 });
 
 client.on('ready', () => {
     console.log('Bot Enchères Prêt !');
+    currentQrCodeImage = '';
 });
 
+// 6. Traitement des commandes
 client.on('message', async (msg) => {
     const chat = await msg.getChat();
     const body = msg.body.trim();
